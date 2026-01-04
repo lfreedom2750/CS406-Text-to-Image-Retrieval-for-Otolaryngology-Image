@@ -1,0 +1,15 @@
+model:
+  image_backbone: resnet50
+  text_backbone: bert-base-uncased
+  embed_dim: 256
+
+training:
+  batch_size: 32
+  lr: 1e-4
+  epochs: 30
+  temperature: 0.07
+  num_workers: 4
+
+data:
+  image_root: data/processed/images
+  annotation_file: data/processed/annotations.json

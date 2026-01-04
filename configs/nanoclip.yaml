@@ -1,0 +1,17 @@
+model:
+  embed_dim: 64
+  image_encoder: dinov2_vits14
+  text_encoder: all-MiniLM-L6-v2
+  unfreeze_img_blocks: 2
+  unfreeze_txt_layers: 2
+  temperature: 0.07
+
+training:
+  batch_size: 32
+  lr: 1e-4
+  epochs: 30
+  num_workers: 4
+
+data:
+  image_root: data/processed/images
+  annotation_file: data/processed/annotations.json
