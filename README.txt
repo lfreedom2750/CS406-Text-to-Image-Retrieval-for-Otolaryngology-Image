@@ -11,7 +11,7 @@ THÀNH VIÊN NHÓM
 
 STT | MSSV     | HỌ VÀ TÊN                | CHỨC VỤ     | EMAIL
 ----+----------+--------------------------+-------------+-------------------------
-1   | 22520899 | Phạm Hoàng Lê Nguyên     | Nhóm trưởng | 22520899@gm.uit.edu.vn
+1   | 22520982 | Phạm Hoàng Lê Nguyên     | Nhóm trưởng | 22520982@gm.uit.edu.vn
 2   | 23520899 | Nguyễn Thế Luân          | Thành viên  | 23520899@gm.uit.edu.vn
 3   | 23521193 | Đinh Hoàng Phúc          | Thành viên  | 23521193@gm.uit.edu.vn
 4   | 23521704 | Trần Thị Cẩm Tú          | Thành viên  | 23521704@gm.uit.edu.vn
@@ -123,13 +123,13 @@ Tất cả các mô hình được huấn luyện và đánh giá trên cùng m�
 DỮ LIỆU SỬ DỤNG
 ------------------------------------------------------------
 
-Dữ liệu được tổ chức thống nhất cho toàn bộ hệ thống, bao gồm:
+Dữ liệu được tổ chức thống nhất cho toàn bộ hệ thống, bao gồm 3 folder 
+train/val/test được chia theo tỷ lệ 8/1/1, trong mỗi folder bao gồm:
 - Tập ảnh y khoa đã được chuẩn hoá.
 - Tập mô tả văn bản tương ứng.
-- Các tập chia train / validation / test theo chỉ số.
 
-Cấu trúc dữ liệu đảm bảo ánh xạ 1–1 giữa ảnh và văn bản, phù hợp với
-giả định trong quá trình đánh giá retrieval.
+Chúng em sử dụng 2 bộ dataset là ENTREP2025 và OCASD. 
+Link dataset: https://drive.google.com/drive/folders/1hjLXlv1FiBkp7HkjoeTatdrLSMLvTWjc?usp=sharing
 
 
 ------------------------------------------------------------
@@ -211,6 +211,73 @@ CHẠY NOTEBOOK:
 
 - Mở các file notebooks/*.ipynb bằng JupyterLab.
 - Chạy từng cell để xem demo hoặc các phân tích trực quan.
+
+
+CHẠY DEMO:
+
+Demo gồm hai phần chính: **Giao diện (Streamlit)** và **Backend (FastAPI)**. Dưới đây là các bước chuẩn bị và lệnh chạy cụ thể.
+
+1. Chuẩn bị mô hình và dữ liệu
+
+- Đảm bảo thư mục ảnh demo có trong `images/` hoặc `demo/images/`.
+- Các file cần có:
+  - Model checkpoint: `model/nanoclip.ckpt` hoặc `model/nanoclip_v2.ckpt` (dùng cho `demo/app.py`).
+  - FAISS index: `faiss_index_raw.bin`, `faiss_index_processed.bin` hoặc `faiss_index.bin` (tuỳ script).
+  - Danh sách đường dẫn ảnh: `image_paths.pkl` (cho Streamlit) hoặc `image_paths.npy` (cho backend).
+- (Tùy chọn) Tải Qwen2-VL (nếu sử dụng rerank local):
+
+  ```
+  python demo/download_qwen.py
+  ```
+
+2. Chạy Backend (FastAPI)
+
+- Cài phụ thuộc nếu cần:
+
+  ```
+  pip install fastapi uvicorn
+  ```
+
+- Chạy server backend (từ thư mục gốc project):
+
+  ```
+  uvicorn demo.backend:app --host 0.0.0.0 --port 8000 --reload
+  ```
+
+- Endpoint truy vấn:
+  - POST `/search` với payload JSON, ví dụ:
+
+  ```json
+  { "text": "viêm amidan", "rerank": true, "top_k": 5 }
+  ```
+
+3. Chạy giao diện (Streamlit)
+
+- Cài Streamlit nếu chưa có:
+
+  ```
+  pip install streamlit
+  ```
+
+- Chạy app:
+
+  ```
+  streamlit run demo/app.py
+  ```
+
+- Mở trình duyệt tại địa chỉ console cung cấp (mặc định http://localhost:8501). Trên sidebar có thể chọn phiên bản NanoCLIP và bật/tắt **LLM rerank**.
+
+4. Lưu ý vận hành
+
+- Để tận dụng GPU, đảm bảo CUDA và PyTorch được cài phù hợp.
+- Nếu gặp lỗi thiếu file index/checkpoint, kiểm tra các đường dẫn như `model/` và file `image_paths.pkl` / `image_paths.npy`.
+- Nếu muốn dùng LLM rerank từ dịch vụ ngoài, chỉnh `LLM_API_URL` trong `demo/app.py` thành endpoint phù hợp hoặc chạy Qwen2-VL local và trỏ tới nó.
+
+Ví dụ cURL để thử backend:
+
+```bash
+curl -X POST http://localhost:8000/search -H "Content-Type: application/json" -d '{"text":"viêm amidan","rerank":true,"top_k":5}'
+```
 
 
 LƯU Ý:

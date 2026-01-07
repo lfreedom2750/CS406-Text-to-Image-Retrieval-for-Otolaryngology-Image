@@ -13,7 +13,7 @@
 
 | STT | MSSV     | Họ và Tên                 | Chức vụ     | Email                    |
 |-----|----------|---------------------------|-------------|--------------------------|
-| 1   | 22520899 | Phạm Hoàng Lê Nguyên      | Nhóm trưởng | 22520899@gm.uit.edu.vn   |
+| 1   | 22520982 | Phạm Hoàng Lê Nguyên      | Nhóm trưởng | 22520982@gm.uit.edu.vn   |
 | 2   | 23520899 | Nguyễn Thế Luân           | Thành viên  | 23520899@gm.uit.edu.vn   |
 | 3   | 23521193 | Đinh Hoàng Phúc           | Thành viên  | 23521193@gm.uit.edu.vn   |
 | 4   | 23521704 | Trần Thị Cẩm Tú           | Thành viên  | 23521704@gm.uit.edu.vn   |
@@ -95,71 +95,17 @@ Tất cả các mô hình được huấn luyện và đánh giá trên cùng m�
 
 # DỮ LIỆU SỬ DỤNG
 
-Dữ liệu được tổ chức thống nhất cho toàn bộ hệ thống, bao gồm:
+Dữ liệu được tổ chức thống nhất cho toàn bộ hệ thống, bao gồm 3 folder 
+train/val/test được chia theo tỷ lệ 8/1/1, trong mỗi folder bao gồm:
 - Tập ảnh y khoa đã được chuẩn hoá.
 - Tập mô tả văn bản tương ứng.
-- Các tập chia train / validation / test theo chỉ số.
 
-Cấu trúc dữ liệu đảm bảo ánh xạ 1–1 giữa ảnh và văn bản,
-phù hợp với giả định trong quá trình đánh giá retrieval.
-
+Chúng em sử dụng 2 bộ dataset là ENTREP2025 và OCASD. 
+Link dataset: https://drive.google.com/drive/folders/1hjLXlv1FiBkp7HkjoeTatdrLSMLvTWjc?usp=sharing
 
 ---
 
-# PHƯƠNG PHÁP HUẤN LUYỆN
-
-Các mô hình được huấn luyện theo phương pháp **Contrastive Learning**.
-Mục tiêu của hàm mất mát là:
-- Tối đa hoá độ tương đồng giữa ảnh và văn bản đúng cặp.
-- Tối thiểu hoá độ tương đồng giữa các cặp không tương ứng.
-
-Quá trình huấn luyện sử dụng:
-- Batch training.
-- Chuẩn hoá embedding (L2 normalization).
-- Tối ưu hoá bằng AdamW.
-
----
-
-# ĐÁNH GIÁ VÀ ĐỘ ĐO
-
-Hiệu năng hệ thống được đánh giá bằng các độ đo chuẩn trong bài toán truy xuất:
-
-- **Recall@K:** tỷ lệ truy xuất đúng trong top-K kết quả.
-- **mAP (mean Average Precision):** phản ánh thứ hạng trung bình của kết quả đúng.
-- **nDCG@K:** đánh giá chất lượng xếp hạng có xét đến vị trí kết quả đúng.
-
-Đánh giá được thực hiện cho cả hai chiều:
-- Text → Image
-- Image → Text
-
----
-
-# KẾT QUẢ THỰC NGHIỆM
-
-Kết quả thực nghiệm cho thấy:
-- Các mô hình chuyên biệt cho y khoa (MedCLIP, BioMedCLIP) đạt hiệu năng cao hơn
-  trên dữ liệu y sinh học.
-- NanoCLIP có ưu điểm về tốc độ và chi phí tính toán.
-- BioMedCLIP thể hiện khả năng tổng quát hoá tốt nhờ tiền huấn luyện quy mô lớn.
-
-Chi tiết kết quả được trình bày trong các bảng đánh giá và biểu đồ so sánh.
-
----
-
-# KẾT LUẬN
-
-Đồ án đã xây dựng thành công một hệ thống truy xuất ảnh y khoa dựa trên văn bản
-với kiến trúc rõ ràng, pipeline thống nhất và khả năng mở rộng cho nhiều mô hình khác nhau.
-Kết quả thực nghiệm cho thấy tầm quan trọng của việc lựa chọn mô hình phù hợp với miền dữ liệu.
-
-Trong tương lai, hệ thống có thể được mở rộng theo các hướng:
-- Hỗ trợ nhiều mô tả cho một ảnh.
-- Kết hợp cross-encoder để reranking.
-- Triển khai giao diện truy vấn trực quan.
-
----
-
-# HƯỚNG DẪN CÀI ĐẶT & THỰC THI ✅
+# HƯỚNG DẪN CÀI ĐẶT & THỰC THI 
 
 ## Yêu cầu cơ bản
 - Python **3.8+** (khuyến nghị 3.9/3.10)
@@ -185,8 +131,7 @@ pip install -r requirements.txt
 pip install torch torchvision pytorch-lightning transformers scikit-learn ftfy tqdm
 ```
 
-3. (Tuỳ chọn) Cài Jupyter để chạy notebooks:
-
+3. Cài Jupyter để chạy notebooks, có thể chạy trên Colab hoặc Kaggle (Các file ipynb nằm trong folder notebooks):
 ```bash
 pip install jupyterlab
 jupyter lab
@@ -217,16 +162,73 @@ python scripts/eval_<model>.py --config configs/<model>.yaml
 ## Chạy notebook
 - Mở `notebooks/*.ipynb` bằng JupyterLab và chạy từng ô (cell) để xem demo hoặc các phân tích trực quan.
 
+## CHẠY DEMO
+
+Demo gồm hai phần chính: **Giao diện (Streamlit)** và **Backend (FastAPI)**. Dưới đây là các bước chuẩn bị và lệnh chạy cụ thể.
+
+### 1) Chuẩn bị mô hình và dữ liệu
+
+- Đảm bảo thư mục ảnh demo có trong `images/` hoặc `demo/images/`.
+- Các file cần có:
+  - Model checkpoint: `model/nanoclip.ckpt` hoặc `model/nanoclip_v2.ckpt` (dùng cho `demo/app.py`).
+  - FAISS index: `faiss_index_raw.bin`, `faiss_index_processed.bin` hoặc `faiss_index.bin` (tuỳ script).
+  - Danh sách đường dẫn ảnh: `image_paths.pkl` (cho Streamlit) hoặc `image_paths.npy` (cho backend).
+- (Tùy chọn) Tải Qwen2-VL (nếu sử dụng rerank local):
+
+```bash
+python demo/download_qwen.py
+```
+
+### 2) Chạy Backend (FastAPI)
+
+- Cài phụ thuộc nếu cần:
+
+```bash
+pip install fastapi uvicorn
+```
+
+- Chạy server backend (từ thư mục gốc project):
+
+```bash
+uvicorn demo.backend:app --host 0.0.0.0 --port 8000 --reload
+```
+
+- Endpoint truy vấn:
+  - POST `/search` với payload JSON, ví dụ:
+
+```json
+{ "text": "viêm amidan", "rerank": true, "top_k": 5 }
+```
+
+### 3) Chạy giao diện (Streamlit)
+
+- Cài Streamlit nếu chưa có:
+
+```bash
+pip install streamlit
+```
+
+- Chạy app:
+
+```bash
+streamlit run demo/app.py
+```
+
+- Mở trình duyệt tại địa chỉ console cung cấp (mặc định http://localhost:8501). Trên sidebar có thể chọn phiên bản NanoCLIP và bật/tắt **LLM rerank**.
+
+### 4) Lưu ý vận hành
+
+- Để tận dụng GPU, đảm bảo CUDA và PyTorch được cài phù hợp.
+- Nếu gặp lỗi thiếu file index/checkpoint, kiểm tra các đường dẫn như `model/` và file `image_paths.pkl` / `image_paths.npy`.
+- Nếu muốn dùng LLM rerank từ dịch vụ ngoài, chỉnh `LLM_API_URL` trong `demo/app.py` thành endpoint phù hợp hoặc chạy Qwen2-VL local và trỏ tới nó.
+
+Ví dụ cURL để thử backend:
+
+```bash
+curl -X POST http://localhost:8000/search -H "Content-Type: application/json" -d '{"text":"viêm amidan","rerank":true,"top_k":5}'
+```
+
 > **Lưu ý:** Để tái lập kết quả, hãy đảm bảo sử dụng cùng phiên bản thư viện, seed ngẫu nhiên và cấu hình GPU tương tự như trong file cấu hình.
-
----
-
-# TÀI LIỆU THAM KHẢO
-
-[1] Radford et al., *Learning Transferable Visual Models From Natural Language Supervision*.  
-[2] Li et al., *BLIP: Bootstrapping Language-Image Pre-training*.  
-[3] Wang et al., *MedCLIP: Contrastive Learning from Medical Images and Text*.  
-[4] OpenCLIP & BioMedCLIP Documentation.
 
 ---
 
